@@ -4,6 +4,7 @@ brew "node"
 brew "rustup-init"
 brew "rustup"
 brew "deno"
+brew "pnpm"
 
 # Personal
 tap "rnaudi/tap"
