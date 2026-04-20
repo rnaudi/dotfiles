@@ -3,6 +3,7 @@
 - Uses Homebrew, Brewfile, and GNU Stow.
 - Symlinks only `zsh`, `git`, `jj`, `nvim` and `ssh` into `$HOME`.
 - Editor configs (VSCode/Cursor) are kept in `dotfiles/` but not stowed.
+- Custom Codex skills live in `dotfiles/skills/`.
 
 ### Quick start
 ```bash
