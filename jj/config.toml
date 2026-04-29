@@ -9,10 +9,30 @@ email = "arnau.diaz@scopely.com"
 username = "rnaudi"
 
 [aliases]
-tug = ["bookmark", "move", "--from", "heads(::@- & bookmarks())", "--to", "@-"]
+tug = ["bookmark", "advance"]
+
+stack = ["log", "-r", "stack"]
+bough = ["log", "-r", "bough"]
+wip = ["log", "-r", "wip"]
+private = ["log", "-r", "private"]
+empty = ["log", "-r", "empty_stack"]
+
+rs = ["rebase", "-b", "bookmarks('push-*')", "-o", "trunk()"]
+ps = ["git", "push", "-b", "push-*"]
+
+[revsets]
+bookmark-advance-to = "@-"
 
 [revset-aliases]
-'searchPR(x)' = 'fork_point(x-)..x ~ x'
+'stack' = 'trunk()..@'
+ 
 'bough(x, m)' = 'descendants(ancestors(x) ~ ancestors(m))'
 'bough(x)' = 'bough(x, trunk())'
 'bough' = 'bough(@)'
+
+'wip' = 'subject("wip:*") & stack'
+'private' = 'subject("private:*") & stack'
+'empty_stack' = 'empty() & stack ~ @'
+
+[git]
+private-commits = "subject('private:*')"
