@@ -41,10 +41,6 @@ function brew_bin() {
 # Sanity check: verify a non-macOS tool from the Brewfile was installed.
 # We pick `bat` because macOS does not ship it by default.
 function check_bat() { command -v bat >/dev/null 2>&1 || { echo "expected bat missing after bundle"; exit 1; }; }
-function check_doctor() { brew doctor || true; }
-function check_brew_bundle() { brew bundle check --file="$DEFAULT_BREWFILE_LINK" || true; }
-function check_code() { command -v code >/dev/null 2>&1 && code --version >/dev/null || true; }
-function check_docker() { command -v docker >/dev/null 2>&1 && docker --version >/dev/null || true; }
 
 function setup_xcode() {
   if ! xcode-select -p >/dev/null 2>&1; then
@@ -170,10 +166,6 @@ function main() {
   setup_dotfiles
   setup_ssh
   setup_gitconfig
-  check_doctor
-  check_brew_bundle
-  check_code
-  check_docker
 
   echo "bootstrap complete"
 }

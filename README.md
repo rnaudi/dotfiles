@@ -25,6 +25,13 @@ runs `brew bundle install --cleanup --file=~/.Brewfile` and `brew upgrade`.
 ### Safe checks
 ```bash
 bash -n scripts/bootstrap.sh
+bash -n scripts/doctor.sh
 ruby -c Brewfile
 brew bundle check --file=Brewfile --verbose
+```
+
+For a fuller local health check:
+
+```bash
+scripts/doctor.sh
 ```
