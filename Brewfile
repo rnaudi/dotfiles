@@ -44,6 +44,7 @@ brew "jj"
 brew "difftastic"
 
 # Shell
+brew "stow"
 brew "zsh-autosuggestions"
 brew "zsh-syntax-highlighting"
 

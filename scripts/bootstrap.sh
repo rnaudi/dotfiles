@@ -21,7 +21,22 @@ function stow_ssh() { stow -Rv --no-folding --dir "$DEFAULT_DOTFILES_DIR" --targ
 function has() { command -v "$1" >/dev/null 2>&1; }
 function is_macos() { [[ "$(uname -s 2>/dev/null || true)" == "Darwin" ]]; }
 function die() { printf '%s\n' "$*" >&2; exit 1; }
-function require_cmd() { has "$1" || die "missing: $1"; }
+
+function brew_bin() {
+  if has brew; then
+    command -v brew
+    return 0
+  fi
+
+  for candidate in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+    if [[ -x "$candidate" ]]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+
+  return 1
+}
 
 # Sanity check: verify a non-macOS tool from the Brewfile was installed.
 # We pick `bat` because macOS does not ship it by default.
@@ -37,14 +52,20 @@ function setup_xcode() {
     xcode-select --install || true
     for _ in {1..30}; do xcode-select -p >/dev/null 2>&1 && break; sleep 2; done
   fi
+  xcode-select -p >/dev/null 2>&1 || die "Xcode Command Line Tools are still missing; finish the installer and rerun bootstrap."
 }
 
 function setup_brew() {
-  if ! has brew; then
+  local brew_cmd
+
+  if ! brew_cmd="$(brew_bin)"; then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   fi
+
+  brew_cmd="$(brew_bin)" || die "Homebrew installed, but brew was not found on PATH or in a standard location."
+
   # shellenv for current shell only; do not write to ~/.zshrc
-  local brew_prefix; brew_prefix="$(/usr/bin/env brew --prefix)"
+  local brew_prefix; brew_prefix="$("$brew_cmd" --prefix)"
   eval "$("${brew_prefix}/bin/brew" shellenv)"
   export HOMEBREW_NO_ENV_HINTS=1
   brew --version >/dev/null
@@ -75,17 +96,30 @@ function setup_brewfile() {
 }
 
 function setup_brew_sync() {
+  local -a bundle_args
+  bundle_args=(install --file="$DEFAULT_BREWFILE_LINK")
+
+  if [[ "${BOOTSTRAP_CLEANUP:-0}" == "1" ]]; then
+    bundle_args+=(--cleanup)
+  else
+    echo "Bootstrap is not running brew bundle --cleanup; set BOOTSTRAP_CLEANUP=1 to remove packages not listed in Brewfile."
+  fi
+
   brew update
   ensure_code_cli
-  HOMEBREW_NO_AUTO_UPDATE=1 brew bundle install --cleanup --file="$DEFAULT_BREWFILE_LINK" || {
-    echo "warning: brew bundle install encountered errors; continuing"
-  }
-  brew upgrade
+  HOMEBREW_NO_AUTO_UPDATE=1 brew bundle "${bundle_args[@]}"
+
+  if [[ "${BOOTSTRAP_UPGRADE:-0}" == "1" ]]; then
+    brew upgrade
+  else
+    echo "Skipping brew upgrade; set BOOTSTRAP_UPGRADE=1 to upgrade installed packages."
+  fi
+
   check_bat
 }
 
 function setup_dotfiles() {
-  has stow || brew install stow
+  has stow || die "stow missing after brew bundle"
   # Ensure SSH dir exists and has correct perms; prevents dir symlink folding
   mkdir -p "$HOME/.ssh"
   chmod 700 "$HOME/.ssh"
@@ -141,7 +175,7 @@ function main() {
   check_code
   check_docker
 
-  echo "done"
+  echo "bootstrap complete"
 }
 
 main "$@"
