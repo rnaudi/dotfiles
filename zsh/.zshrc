@@ -76,13 +76,6 @@ function dockerm() {
   docker stop "$1" && docker rm "$1"
 }
 
-function wip-new() {
-  local month=$(date "+%Y%m")
-  local name="$1"
-  local file="$HOME/notes/wip/${month}-${name}.md"
-  vi "$file"
-}
-
 function brew-sync() {
   brew update &&
   brew bundle install --cleanup --file=~/.Brewfile &&
@@ -91,37 +84,6 @@ function brew-sync() {
 
 function t {
   pushd $(mktemp -d /tmp/$1.XXXX)
-}
-
-function release {
-  local repo base existing
-  case "$1" in
-    h)
-      repo="scopely/heimdall"
-      base="master"
-      ;;
-    pa)
-      repo="scopely/player-authx"
-      base="main"
-      ;;
-    *)
-      echo "Usage: release [h|pa]"
-      echo "  h  = heimdall (develop → master)"
-      echo "  pa = player-authx (develop → main)"
-      return 1
-      ;;
-  esac
-
-  existing=$(gh pr list --repo "$repo" --base "$base" --head develop --state open --json number -q '.[0].number')
-  if [[ -n "$existing" ]]; then
-    echo "Release PR already open: https://github.com/$repo/pull/$existing"
-    return
-  fi
-
-  gh pr create --repo "$repo" --base "$base" --head develop \
-    --title "Release $(date +%Y-%m-%d)" \
-    --body "Release PR" \
-    --web
 }
 
 function oc() {
