@@ -135,8 +135,9 @@ function setup_dotfiles() {
 
 function setup_ssh() {
   # Generate key if missing; print pub for GitHub
-  local email; email="$(git config --global --get user.email || true)"
-  [[ -n "$email" ]] || die "error: git user.email is not set. Configure it in ~/.gitconfig before running bootstrap."
+  local email
+  email="$(jj config get user.email 2>/dev/null || git config --global --get user.email || true)"
+  [[ -n "$email" ]] || die "error: no email configured. Set user.email in jj or git before running bootstrap."
   if [[ ! -f "$HOME/.ssh/id_ed25519" ]]; then
     umask 077
     ssh-keygen -t ed25519 -C "$email" -f "$HOME/.ssh/id_ed25519" -N ""
@@ -146,11 +147,6 @@ function setup_ssh() {
 }
 
 function setup_gitconfig() {
-  local name email
-  name="$(git config --global --get user.name || true)"
-  email="$(git config --global --get user.email || true)"
-  [[ -n "$name" ]] || die "error: git user.name is not set. Configure it in ~/.gitconfig before running bootstrap."
-  [[ -n "$email" ]] || die "error: git user.email is not set. Configure it in ~/.gitconfig before running bootstrap."
   git config --global core.excludesfile >/dev/null 2>&1 || git config --global core.excludesfile "$HOME/.gitignore_global"
 }
 
