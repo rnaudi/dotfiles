@@ -14,19 +14,36 @@ compinit
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
+# Homebrew
+if (( $+commands[brew] )); then
+  HOMEBREW_PREFIX="$(brew --prefix)"
+elif [[ -d /opt/homebrew ]]; then
+  HOMEBREW_PREFIX=/opt/homebrew
+elif [[ -d /usr/local ]]; then
+  HOMEBREW_PREFIX=/usr/local
+fi
+
 # fzf
-source <(fzf --zsh)
+if (( $+commands[fzf] )); then
+  source <(fzf --zsh)
+fi
 
 # jj completions
-source <(jj util completion zsh)
+if (( $+commands[jj] )); then
+  source <(jj util completion zsh)
+fi
 
 # Plugins (via Homebrew)
-source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+if [[ -n "${HOMEBREW_PREFIX:-}" ]]; then
+  [[ -r "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] && source "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+  [[ -r "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]] && source "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+fi
 
 # PATH
-export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
-export PATH="/opt/homebrew/lib/ruby/gems/3.4.0/bin:$PATH"
+if [[ -n "${HOMEBREW_PREFIX:-}" ]]; then
+  [[ -d "$HOMEBREW_PREFIX/opt/ruby/bin" ]] && export PATH="$HOMEBREW_PREFIX/opt/ruby/bin:$PATH"
+  [[ -d "$HOMEBREW_PREFIX/lib/ruby/gems/3.4.0/bin" ]] && export PATH="$HOMEBREW_PREFIX/lib/ruby/gems/3.4.0/bin:$PATH"
+fi
 export PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$PATH"
 
 # Options
